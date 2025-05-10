@@ -1,7 +1,5 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { 
   Home, 
   Users, 
@@ -12,7 +10,9 @@ import {
   Calendar,
   User
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
+import { StatusCard } from "@/components/dashboard/StatusCard";
+import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
 
 export default function Dashboard() {
   const { user, isWarden, isStudent } = useAuth();
@@ -95,48 +95,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <Card className="border-l-4 border-l-hostel-blue">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold">Welcome, {user?.name}!</h2>
-              <p className="text-muted-foreground mt-1">
-                {isStudent ? `Room: ${user?.roomNumber}, ${user?.hostelBlock}` : `Role: Hostel Warden, ${user?.hostelBlock}`}
-              </p>
-            </div>
-            <div className="hidden md:block">
-              {/* Current date and time */}
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <WelcomeCard user={user} isStudent={isStudent} />
 
       {/* Quick actions section */}
       <section className="hostel-section">
         <h2 className="hostel-title">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {actionCards.map((card) => (
-            <Link key={card.title} to={card.path} className="block">
-              <Card className={`h-full transition-all hover:shadow-md hover:scale-[1.01] ${card.color} border-none`}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    {card.icon}
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                      </svg>
-                    </Button>
-                  </div>
-                  <CardTitle className="mt-4">{card.title}</CardTitle>
-                  <CardDescription>{card.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
+            <QuickActionCard 
+              key={card.title}
+              title={card.title}
+              description={card.description}
+              icon={card.icon}
+              path={card.path}
+              color={card.color}
+            />
           ))}
         </div>
       </section>
@@ -147,64 +120,40 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {isStudent && (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Room Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">Active</div>
-                  <p className="text-sm text-muted-foreground">Room {user?.roomNumber}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Pending Complaints</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">1</div>
-                  <p className="text-sm text-muted-foreground">Last updated 2 days ago</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Outings This Month</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">4</div>
-                  <p className="text-sm text-muted-foreground">7 hours total</p>
-                </CardContent>
-              </Card>
+              <StatusCard 
+                title="Room Status" 
+                value="Active" 
+                description={`Room ${user?.roomNumber}`} 
+              />
+              <StatusCard 
+                title="Pending Complaints" 
+                value="1" 
+                description="Last updated 2 days ago" 
+              />
+              <StatusCard 
+                title="Outings This Month" 
+                value="4" 
+                description="7 hours total" 
+              />
             </>
           )}
           {isWarden && (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Total Students</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">248</div>
-                  <p className="text-sm text-muted-foreground">16 new this month</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Active Complaints</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">12</div>
-                  <p className="text-sm text-muted-foreground">4 pending approval</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Students on Outing</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">23</div>
-                  <p className="text-sm text-muted-foreground">Updated just now</p>
-                </CardContent>
-              </Card>
+              <StatusCard 
+                title="Total Students" 
+                value="248" 
+                description="16 new this month" 
+              />
+              <StatusCard 
+                title="Active Complaints" 
+                value="12" 
+                description="4 pending approval" 
+              />
+              <StatusCard 
+                title="Students on Outing" 
+                value="23" 
+                description="Updated just now" 
+              />
             </>
           )}
         </div>

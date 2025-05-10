@@ -11,6 +11,9 @@ import Emergency from "./pages/Emergency";
 import Outings from "./pages/Outings";
 import Laundry from "./pages/Laundry";
 import Profile from "./pages/Profile";
+import Allocations from "./pages/Allocations";
+import Students from "./pages/Students";
+import Approvals from "./pages/Approvals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +33,9 @@ const App = () => (
             <Route path="/outings" element={<Outings />} />
             <Route path="/laundry" element={<Laundry />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/allocations" element={<Allocations />} />
+            <Route path="/students" element={<Students />} />
+            <Route path="/approvals" element={<Approvals />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           

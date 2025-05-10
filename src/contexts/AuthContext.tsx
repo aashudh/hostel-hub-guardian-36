@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from "sonner";
 
@@ -12,6 +11,8 @@ type User = {
   roomNumber?: string;
   hostelBlock?: string;
   profileImage?: string;
+  phoneNumber?: string;
+  emergencyContacts?: string[];
 };
 
 interface AuthContextType {
@@ -35,7 +36,9 @@ const MOCK_USERS = [
     role: 'student' as UserRole,
     roomNumber: 'A-101',
     hostelBlock: 'Block A',
-    profileImage: '/placeholder.svg'
+    profileImage: '/placeholder.svg',
+    phoneNumber: '555-123-4567',
+    emergencyContacts: ['Parent: 555-234-5678', 'Guardian: 555-345-6789', '']
   },
   {
     id: '2',
@@ -44,7 +47,9 @@ const MOCK_USERS = [
     password: 'password',
     role: 'warden' as UserRole,
     hostelBlock: 'All Blocks',
-    profileImage: '/placeholder.svg'
+    profileImage: '/placeholder.svg',
+    phoneNumber: '555-987-6543',
+    emergencyContacts: ['Admin Office: 555-111-2222', 'Security: 555-333-4444', '']
   }
 ];
 
