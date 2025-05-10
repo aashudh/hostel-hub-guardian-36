@@ -10,6 +10,7 @@ import Complaints from "./pages/Complaints";
 import Emergency from "./pages/Emergency";
 import Outings from "./pages/Outings";
 import Laundry from "./pages/Laundry";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/emergency" element={<Emergency />} />
             <Route path="/outings" element={<Outings />} />
             <Route path="/laundry" element={<Laundry />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           
