@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from '@supabase/supabase-js';
 
-type UserRole = 'student' | 'warden' | null;
+export type UserRole = 'student' | 'warden' | null;
 
-type User = {
+export type User = {
   id: string;
   name: string;
   email: string;
@@ -17,71 +20,164 @@ type User = {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isWarden: boolean;
   isStudent: boolean;
+  session: Session | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
-const MOCK_USERS = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'student@example.com',
-    password: 'password',
-    role: 'student' as UserRole,
-    roomNumber: 'A-101',
-    hostelBlock: 'Block A',
-    profileImage: '/placeholder.svg',
-    phoneNumber: '555-123-4567',
-    emergencyContacts: ['Parent: 555-234-5678', 'Guardian: 555-345-6789', '']
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'warden@example.com',
-    password: 'password',
-    role: 'warden' as UserRole,
-    hostelBlock: 'All Blocks',
-    profileImage: '/placeholder.svg',
-    phoneNumber: '555-987-6543',
-    emergencyContacts: ['Admin Office: 555-111-2222', 'Security: 555-333-4444', '']
-  }
-];
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
-  const login = (email: string, password: string) => {
-    const foundUser = MOCK_USERS.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      // Omit password from the user object
-      const { password, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      toast.success(`Welcome back, ${foundUser.name}!`);
-    } else {
-      toast.error("Invalid email or password");
+  // Initialize auth state
+  useEffect(() => {
+    // First set up the auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        setSession(newSession);
+        
+        if (newSession?.user) {
+          // Check if user exists in either students or wardens table
+          const studentRes = await supabase
+            .from('students')
+            .select('*')
+            .eq('user_id', newSession.user.id)
+            .single();
+          
+          const wardenRes = await supabase
+            .from('wardens')
+            .select('*')
+            .eq('user_id', newSession.user.id)
+            .single();
+            
+          if (studentRes.data) {
+            setUser({
+              id: studentRes.data.id,
+              name: studentRes.data.name,
+              email: studentRes.data.email,
+              role: 'student',
+              roomNumber: studentRes.data.room_number,
+              hostelBlock: studentRes.data.hostel_block,
+              phoneNumber: studentRes.data.phone,
+              emergencyContacts: studentRes.data.emergency_contacts || []
+            });
+          } else if (wardenRes.data) {
+            setUser({
+              id: wardenRes.data.id,
+              name: wardenRes.data.name,
+              email: wardenRes.data.email,
+              role: 'warden',
+              hostelBlock: wardenRes.data.hostel_block,
+              phoneNumber: wardenRes.data.phone,
+              emergencyContacts: []
+            });
+          } else {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        // We'll fetch the user data in the auth state change handler
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login");
+      throw error;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    toast.info("You have been logged out");
+  const register = async (userData: any) => {
+    try {
+      // Register the user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Registration failed");
+
+      // Create the user profile in the appropriate table
+      if (userData.role === 'student') {
+        const { error: studentError } = await supabase.from('students').insert({
+          user_id: authData.user.id,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phoneNumber,
+          room_number: userData.roomNumber || 'Unassigned',
+          hostel_block: userData.hostelBlock || 'Unassigned',
+          emergency_contacts: userData.emergencyContact ? [userData.emergencyContact] : []
+        });
+
+        if (studentError) throw studentError;
+      } else if (userData.role === 'warden') {
+        const { error: wardenError } = await supabase.from('wardens').insert({
+          user_id: authData.user.id,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phoneNumber,
+          hostel_block: userData.hostelBlock || 'All Blocks'
+        });
+
+        if (wardenError) throw wardenError;
+      }
+
+      toast.success("Registration successful", { 
+        description: "Your account has been created. You can now login." 
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Registration failed");
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.info("You have been logged out");
+    } catch (error: any) {
+      toast.error(error.message || "Logout failed");
+    }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
       login, 
+      register,
       logout, 
       isAuthenticated: !!user,
       isWarden: user?.role === 'warden',
-      isStudent: user?.role === 'student'
+      isStudent: user?.role === 'student',
+      session
     }}>
       {children}
     </AuthContext.Provider>

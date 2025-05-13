@@ -1,4 +1,3 @@
-
 import { useState, FormEvent } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,9 +22,10 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      login(email, password);
+      await login(email, password);
     } catch (error) {
-      toast.error("Failed to login");
+      // Error is handled within the login function
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -87,12 +87,6 @@ export default function Login() {
                   Sign up
                 </Link>
               </p>
-              <div className="text-sm text-muted-foreground text-center">
-                <p>Demo Accounts:</p>
-                <p className="mt-1">Student: student@example.com</p>
-                <p>Warden: warden@example.com</p>
-                <p>Password: password</p>
-              </div>
             </CardFooter>
           </form>
         </Card>

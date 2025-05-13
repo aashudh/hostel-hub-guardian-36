@@ -9,7 +9,201 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          important: boolean | null
+          title: string
+          warden_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          important?: boolean | null
+          title: string
+          warden_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          important?: boolean | null
+          title?: string
+          warden_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_warden_id_fkey"
+            columns: ["warden_id"]
+            isOneToOne: false
+            referencedRelation: "wardens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          resolved_at: string | null
+          response: string | null
+          status: string
+          student_id: string | null
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          resolved_at?: string | null
+          response?: string | null
+          status?: string
+          student_id?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          resolved_at?: string | null
+          response?: string | null
+          status?: string
+          student_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outings: {
+        Row: {
+          actual_return_time: string | null
+          created_at: string | null
+          departure_time: string
+          destination: string
+          expected_return_time: string
+          id: string
+          otp: string | null
+          otp_valid_until: string | null
+          reason: string
+          status: string
+          student_id: string | null
+        }
+        Insert: {
+          actual_return_time?: string | null
+          created_at?: string | null
+          departure_time: string
+          destination: string
+          expected_return_time: string
+          id?: string
+          otp?: string | null
+          otp_valid_until?: string | null
+          reason: string
+          status?: string
+          student_id?: string | null
+        }
+        Update: {
+          actual_return_time?: string | null
+          created_at?: string | null
+          departure_time?: string
+          destination?: string
+          expected_return_time?: string
+          id?: string
+          otp?: string | null
+          otp_valid_until?: string | null
+          reason?: string
+          status?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          email: string
+          emergency_contacts: Json | null
+          hostel_block: string
+          id: string
+          name: string
+          phone: string | null
+          room_number: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          emergency_contacts?: Json | null
+          hostel_block: string
+          id?: string
+          name: string
+          phone?: string | null
+          room_number: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          emergency_contacts?: Json | null
+          hostel_block?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          room_number?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      wardens: {
+        Row: {
+          created_at: string | null
+          email: string
+          hostel_block: string
+          id: string
+          name: string
+          phone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          hostel_block: string
+          id?: string
+          name: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          hostel_block?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

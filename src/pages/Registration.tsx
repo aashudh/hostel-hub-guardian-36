@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,7 +18,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { UserPlus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Define the registration form schema
 const registrationSchema = z.object({
@@ -41,6 +41,7 @@ type RegistrationFormValues = z.infer<typeof registrationSchema>;
 export default function Registration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { register: registerUser } = useAuth();
   
   // Initialize form with react-hook-form
   const form = useForm<RegistrationFormValues>({
@@ -59,18 +60,17 @@ export default function Registration() {
   });
   
   // Handle form submission
-  function onSubmit(data: RegistrationFormValues) {
+  async function onSubmit(data: RegistrationFormValues) {
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Registration data:", data);
-      toast.success("Registration successful", { 
-        description: "Your account has been created. You can now login." 
-      });
-      setIsSubmitting(false);
+    try {
+      await registerUser(data);
       navigate("/login");
-    }, 1500);
+    } catch (error) {
+      console.error("Registration error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
   
   return (

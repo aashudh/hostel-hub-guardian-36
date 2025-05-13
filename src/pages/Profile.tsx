@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Profile() {
   const { user, isStudent, isWarden } = useAuth();
@@ -27,10 +28,52 @@ export default function Profile() {
     }));
   };
 
-  const handleSave = () => {
-    // In a real application, this would update the user data in the backend
-    toast.success("Profile updated successfully");
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      const emergencyContacts = [
+        formData.emergencyContact1,
+        formData.emergencyContact2,
+        formData.emergencyContact3
+      ].filter(contact => !!contact);
+
+      if (isStudent) {
+        const { error } = await supabase
+          .from('students')
+          .update({
+            name: formData.name,
+            phone: formData.phoneNumber,
+            emergency_contacts: emergencyContacts
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      } else if (isWarden) {
+        const { error } = await supabase
+          .from('wardens')
+          .update({
+            name: formData.name,
+            phone: formData.phoneNumber
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully."
+      });
+      
+      setIsEditing(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        description: error.message || "Failed to update profile",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
