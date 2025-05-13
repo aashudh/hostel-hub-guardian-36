@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Calendar, Clock, Info, ArrowRightLeft } from "lucide-react";
+import { Calendar, Clock, Info, ArrowRightLeft, Shield, Key } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -19,6 +19,11 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { 
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot
+} from "@/components/ui/input-otp";
 
 // Mock outing data
 const MOCK_OUTINGS = [
@@ -28,7 +33,8 @@ const MOCK_OUTINGS = [
     inTime: "2025-05-08T18:45:00",
     purpose: "Shopping for essentials at the nearby mall",
     status: "completed",
-    destination: "City Center Mall"
+    destination: "City Center Mall",
+    parentPhone: "+91 9876543210"
   },
   {
     id: "outing-2",
@@ -36,7 +42,8 @@ const MOCK_OUTINGS = [
     inTime: "2025-05-05T15:20:00",
     purpose: "Medical appointment at City Hospital",
     status: "completed",
-    destination: "City Hospital"
+    destination: "City Hospital",
+    parentPhone: "+91 9876543210"
   },
   {
     id: "outing-3",
@@ -44,7 +51,8 @@ const MOCK_OUTINGS = [
     inTime: null,
     purpose: "Project meeting with classmates",
     status: "active",
-    destination: "University Library"
+    destination: "University Library",
+    parentPhone: "+91 9876543210"
   }
 ];
 
@@ -55,9 +63,16 @@ export default function Outings() {
     purpose: "",
     destination: "",
     outTime: "",
-    expectedReturn: ""
+    expectedReturn: "",
+    parentPhone: ""
   });
   const [selectedOuting, setSelectedOuting] = useState<any>(null);
+  const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [otpVerificationStatus, setOtpVerificationStatus] = useState<"idle" | "verifying" | "success" | "failed">("idle");
+  const [otpExpiryTime, setOtpExpiryTime] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(60);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -68,32 +83,84 @@ export default function Outings() {
     e.preventDefault();
     
     // Validate form
-    if (!formData.purpose || !formData.destination || !formData.outTime) {
+    if (!formData.purpose || !formData.destination || !formData.outTime || !formData.parentPhone) {
       toast.error("Please fill all required fields");
       return;
     }
 
-    // Create new outing
-    const newOuting = {
-      id: `outing-${Date.now()}`,
-      outTime: new Date(formData.outTime).toISOString(),
-      inTime: null,
-      purpose: formData.purpose,
-      status: "active",
-      destination: formData.destination
-    };
+    // Generate OTP and show the OTP verification dialog
+    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(newOtp);
+    setOtpExpiryTime(Date.now() + 60 * 1000); // 1 minute expiry
+    setTimeLeft(60);
+    setIsOtpDialogOpen(true);
 
-    setOutings([newOuting, ...outings]);
-    
-    // Reset form
-    setFormData({
-      purpose: "",
-      destination: "",
-      outTime: "",
-      expectedReturn: ""
+    // Mock sending OTP to parent's phone
+    toast.info(`OTP sent to parent's phone: ${formData.parentPhone}`, {
+      description: `For demo purposes, the OTP is: ${newOtp}`,
+      duration: 5000,
     });
 
-    toast.success("Outing registered successfully!");
+    // Start countdown timer
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const verifyOtp = () => {
+    setOtpVerificationStatus("verifying");
+    
+    setTimeout(() => {
+      if (otpExpiryTime && Date.now() > otpExpiryTime) {
+        setOtpVerificationStatus("failed");
+        toast.error("OTP has expired. Please request a new one.");
+        return;
+      }
+
+      if (otp === generatedOtp) {
+        setOtpVerificationStatus("success");
+        toast.success("OTP verification successful!");
+        
+        // Create new outing after OTP verification
+        setTimeout(() => {
+          const newOuting = {
+            id: `outing-${Date.now()}`,
+            outTime: new Date(formData.outTime).toISOString(),
+            inTime: null,
+            purpose: formData.purpose,
+            status: "active",
+            destination: formData.destination,
+            parentPhone: formData.parentPhone
+          };
+      
+          setOutings([newOuting, ...outings]);
+          
+          // Reset form
+          setFormData({
+            purpose: "",
+            destination: "",
+            outTime: "",
+            expectedReturn: "",
+            parentPhone: ""
+          });
+      
+          setIsOtpDialogOpen(false);
+          setOtp("");
+          setOtpVerificationStatus("idle");
+          
+          toast.success("Outing registered successfully!");
+        }, 1000);
+      } else {
+        setOtpVerificationStatus("failed");
+        toast.error("Invalid OTP. Please try again.");
+      }
+    }, 1500);
   };
 
   const handleReturnNow = (outingId: string) => {
@@ -203,14 +270,76 @@ export default function Outings() {
                   </div>
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="parentPhone">Parent's Phone Number</Label>
+                  <Input 
+                    id="parentPhone" 
+                    name="parentPhone"
+                    type="tel"
+                    value={formData.parentPhone}
+                    onChange={handleFormChange}
+                    placeholder="+91 9876543210"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">OTP will be sent to this number for verification</p>
+                </div>
+                
                 <DialogFooter>
-                  <Button type="submit" className="w-full sm:w-auto">Register Outing</Button>
+                  <Button type="submit" className="w-full sm:w-auto">Request Outing</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
         )}
       </div>
+
+      {/* OTP Verification Dialog */}
+      <Dialog open={isOtpDialogOpen} onOpenChange={setIsOtpDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Verify OTP</DialogTitle>
+            <DialogDescription>
+              An OTP has been sent to your parent's phone number. Please enter the 6-digit code below to verify.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6 flex flex-col items-center">
+            <div className="mb-6">
+              <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            
+            {timeLeft > 0 ? (
+              <p className="text-sm flex items-center gap-1">
+                <Clock size={14} /> OTP expires in <span className="font-bold">{timeLeft}</span> seconds
+              </p>
+            ) : (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <Clock size={14} /> OTP has expired. Please try again.
+              </p>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              onClick={verifyOtp} 
+              disabled={otp.length !== 6 || otpVerificationStatus === "verifying" || timeLeft === 0}
+              className="w-full flex items-center gap-2"
+            >
+              {otpVerificationStatus === "verifying" ? "Verifying..." : "Verify OTP"}
+              <Key size={16} />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {activeOuting && (
         <Card className="border-l-4 border-l-green-500">
@@ -323,6 +452,14 @@ export default function Outings() {
                                     <h3 className="text-sm font-medium">In Time</h3>
                                     <p className="text-sm">{formatDateTime(selectedOuting.inTime)}</p>
                                   </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Shield size={16} className="text-hostel-blue" /> 
+                                <div>
+                                  <h3 className="text-sm font-medium">Parent Contact</h3>
+                                  <p className="text-sm">{selectedOuting.parentPhone}</p>
                                 </div>
                               </div>
                               

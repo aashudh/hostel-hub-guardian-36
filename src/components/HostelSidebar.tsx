@@ -25,7 +25,8 @@ import {
   AlarmClock,
   Bed,
   Shield,
-  Clock
+  Clock,
+  UserPlus
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,11 @@ export function HostelSidebar() {
       title: "Emergency",
       icon: Bell,
       path: "/emergency"
+    },
+    {
+      title: "Announcements",
+      icon: Bell,
+      path: "/announcements"
     }
   ];
 
@@ -94,9 +100,9 @@ export function HostelSidebar() {
       path: "/allocations"
     },
     {
-      title: "Maintenance",
-      icon: Settings,
-      path: "/maintenance"
+      title: "Students",
+      icon: UserPlus,
+      path: "/students"
     },
     {
       title: "Reports",

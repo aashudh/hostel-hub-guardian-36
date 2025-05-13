@@ -6,9 +6,11 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { HostelLayout } from "./components/HostelLayout";
 import Dashboard from "./pages/Index";
 import Login from "./pages/Login";
+import Registration from "./pages/Registration";
 import Complaints from "./pages/Complaints";
 import Emergency from "./pages/Emergency";
 import Outings from "./pages/Outings";
+import Announcements from "./pages/Announcements";
 import Laundry from "./pages/Laundry";
 import Profile from "./pages/Profile";
 import Allocations from "./pages/Allocations";
@@ -25,6 +27,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Registration />} />
           
           <Route element={<HostelLayout />}>
             <Route path="/" element={<Dashboard />} />
@@ -36,6 +39,7 @@ const App = () => (
             <Route path="/allocations" element={<Allocations />} />
             <Route path="/students" element={<Students />} />
             <Route path="/approvals" element={<Approvals />} />
+            <Route path="/announcements" element={<Announcements />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           
