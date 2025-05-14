@@ -2,5 +2,5 @@
 project_id = "phrconxtfyklkvjcgxaz"
 
 [auth]
-site_url = "https://lovable.dev"
-additional_redirect_urls = ["https://lovable.dev", "https://*.lovable.app", "https://*.lovable.dev", "http://localhost:3000"]
+site_url = "https://c0771c60-95fc-458a-9606-dc1cdd56b482.lovableproject.com"
+additional_redirect_urls = ["https://c0771c60-95fc-458a-9606-dc1cdd56b482.lovableproject.com", "https://*.lovable.app", "https://*.lovable.dev", "http://localhost:3000"]

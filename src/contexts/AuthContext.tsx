@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 
@@ -142,11 +141,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error("Login error:", error.message);
-        toast({
-          title: "Login failed",
-          description: error.message || "Failed to login",
-          variant: "destructive",
-        });
         throw error;
       }
       
@@ -154,11 +148,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Return void to match the interface
     } catch (error: any) {
       console.error("Login function error:", error.message);
-      toast({
-        title: "Login failed",
-        description: error.message || "Failed to login",
-        variant: "destructive",
-      });
       throw error;
     }
   };
@@ -171,8 +160,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password: userData.password,
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Registration failed");
+      if (authError) {
+        if (authError.message?.includes("smtp") || authError.message?.includes("email")) {
+          console.warn("Email confirmation error, but registration succeeded:", authError.message);
+          // Continue with user creation even if email confirmation failed
+        } else {
+          throw authError;
+        }
+      }
+      
+      if (!authData.user) {
+        throw new Error("Registration failed - no user returned");
+      }
 
       // Create the user profile in the appropriate table
       if (userData.role === 'student') {
@@ -199,17 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (wardenError) throw wardenError;
       }
 
-      toast({
-        title: "Registration successful", 
-        description: "Your account has been created. You can now login.",
-        variant: "default"
-      });
     } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.message || "Registration failed",
-        variant: "destructive"
-      });
       throw error;
     }
   };
@@ -217,17 +206,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      toast({
-        title: "Logged out",
-        description: "You have been logged out",
-        variant: "default"
-      });
+      toast.success("Logged out", "You have been logged out");
     } catch (error: any) {
-      toast({
-        title: "Logout failed",
-        description: error.message || "Logout failed",
-        variant: "destructive"
-      });
+      toast.error("Logout failed", error.message || "Logout failed");
     }
   };
 

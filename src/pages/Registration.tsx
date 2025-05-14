@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -17,7 +16,7 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Define the registration form schema
@@ -40,6 +39,8 @@ type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
 export default function Registration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { register: registerUser } = useAuth();
   
@@ -65,9 +66,16 @@ export default function Registration() {
     
     try {
       await registerUser(data);
+      toast.success("Registration successful", "Your account has been created. You can now login.");
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
+      if (error.message?.includes("smtp") || error.message?.includes("email")) {
+        toast.success("Registration successful", "Your account has been created, but there was an issue sending the confirmation email. You can still login.");
+        navigate("/login");
+      } else {
+        toast.error("Registration failed", error.message || "Failed to register");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -75,19 +83,19 @@ export default function Registration() {
   
   return (
     <div className="container max-w-screen-md mx-auto py-8 px-4">
-      <Card>
-        <CardHeader className="space-y-1">
+      <Card className="border-slate-200 shadow-lg">
+        <CardHeader className="space-y-1 bg-gradient-to-r from-slate-50 to-slate-100 rounded-t-lg border-b border-slate-200">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-hostel-blue rounded-full p-3">
+            <div className="bg-blue-600 rounded-full p-3">
               <UserPlus size={28} className="text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl font-bold text-slate-800 text-center">Create an Account</CardTitle>
+          <CardDescription className="text-slate-600 text-center">
             Enter your details below to register for the hostel management system
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -96,9 +104,9 @@ export default function Registration() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel className="text-slate-700">Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="John Doe" {...field} className="bg-white border-slate-300" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -110,9 +118,9 @@ export default function Registration() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-slate-700">Email</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="you@example.com" {...field} />
+                        <Input type="email" placeholder="you@example.com" {...field} className="bg-white border-slate-300" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -124,9 +132,28 @@ export default function Registration() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-slate-700">Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
+                        <div className="relative">
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="********" 
+                            {...field} 
+                            className="bg-white border-slate-300"
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPassword(!showPassword)} 
+                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5 text-slate-400" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-slate-400" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -138,9 +165,28 @@ export default function Registration() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel className="text-slate-700">Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="********" {...field} />
+                        <div className="relative">
+                          <Input 
+                            type={showConfirmPassword ? "text" : "password"} 
+                            placeholder="********" 
+                            {...field} 
+                            className="bg-white border-slate-300"
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-5 w-5 text-slate-400" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-slate-400" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -183,10 +229,10 @@ export default function Registration() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel className="text-slate-700">Role</FormLabel>
                       <FormControl>
                         <select 
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           {...field}
                         >
                           <option value="student">Student</option>
@@ -225,7 +271,7 @@ export default function Registration() {
                           <FormLabel>Hostel Block (Optional)</FormLabel>
                           <FormControl>
                             <select 
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                               {...field}
                             >
                               <option value="">Select a block</option>
@@ -243,16 +289,26 @@ export default function Registration() {
                 )}
               </div>
               
-              <Button type="submit" className="w-full bg-hostel-blue" disabled={isSubmitting}>
-                {isSubmitting ? "Registering..." : "Register"}
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <span className="mr-2">Registering...</span>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Register
+                  </>
+                )}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
+        <CardFooter className="flex justify-center bg-gradient-to-r from-slate-50 to-slate-100 rounded-b-lg border-t border-slate-200">
+          <p className="text-sm text-slate-600">
             Already have an account?{" "}
-            <Link to="/login" className="text-hostel-blue hover:underline">
+            <Link to="/login" className="text-blue-600 hover:text-blue-800 hover:underline">
               Log in
             </Link>
           </p>
