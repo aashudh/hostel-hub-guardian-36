@@ -1,1 +1,6 @@
+
 project_id = "phrconxtfyklkvjcgxaz"
+
+[auth]
+site_url = "https://lovable.dev"
+additional_redirect_urls = ["https://lovable.dev", "https://*.lovable.app", "https://*.lovable.dev"]

@@ -57,6 +57,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .single();
             
           if (studentRes.data) {
+            // Convert emergency_contacts to array if it's not already
+            let emergencyContacts: string[] = [];
+            if (studentRes.data.emergency_contacts) {
+              if (Array.isArray(studentRes.data.emergency_contacts)) {
+                emergencyContacts = studentRes.data.emergency_contacts;
+              } else if (typeof studentRes.data.emergency_contacts === 'string') {
+                emergencyContacts = [studentRes.data.emergency_contacts];
+              }
+            }
+
             setUser({
               id: studentRes.data.id,
               name: studentRes.data.name,
@@ -65,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               roomNumber: studentRes.data.room_number,
               hostelBlock: studentRes.data.hostel_block,
               phoneNumber: studentRes.data.phone,
-              emergencyContacts: studentRes.data.emergency_contacts || []
+              emergencyContacts
             });
           } else if (wardenRes.data) {
             setUser({
