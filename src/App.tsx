@@ -1,5 +1,4 @@
 
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -23,7 +22,6 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <Sonner position="top-right" />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

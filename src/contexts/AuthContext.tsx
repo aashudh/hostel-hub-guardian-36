@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log("Login successful:", data.user?.email);
-      return data;
+      // Return void to match the interface
     } catch (error: any) {
       console.error("Login function error:", error.message);
       toast({
@@ -178,11 +179,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (wardenError) throw wardenError;
       }
 
-      toast.success("Registration successful", { 
-        description: "Your account has been created. You can now login." 
+      toast({
+        title: "Registration successful", 
+        description: "Your account has been created. You can now login.",
+        variant: "default"
       });
     } catch (error: any) {
-      toast.error(error.message || "Registration failed");
+      toast({
+        title: "Registration failed",
+        description: error.message || "Registration failed",
+        variant: "destructive"
+      });
       throw error;
     }
   };
@@ -190,9 +197,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      toast.info("You have been logged out");
+      toast({
+        title: "Logged out",
+        description: "You have been logged out",
+        variant: "default"
+      });
     } catch (error: any) {
-      toast.error(error.message || "Logout failed");
+      toast({
+        title: "Logout failed",
+        description: error.message || "Logout failed",
+        variant: "destructive"
+      });
     }
   };
 

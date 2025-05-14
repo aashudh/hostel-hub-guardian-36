@@ -1,6 +1,5 @@
 
 import { Outlet } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { HostelSidebar } from "./HostelSidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,8 +11,6 @@ export function HostelLayout() {
 
   return (
     <>
-      <Toaster position="top-right" />
-      
       {isAuthenticated ? (
         <SidebarProvider>
           <div className="flex min-h-screen w-full">

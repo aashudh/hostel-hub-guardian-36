@@ -30,11 +30,7 @@ export default function Login() {
       });
     } catch (error: any) {
       console.error("Login error:", error);
-      toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again",
-        variant: "destructive",
-      });
+      // Toast is already displayed in the login function
     } finally {
       setIsLoading(false);
     }
