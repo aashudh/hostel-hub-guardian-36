@@ -23,7 +23,9 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Missing information", "Please enter your email and password");
+      toast.error("Missing information", {
+        description: "Please enter your email and password"
+      });
       return;
     }
     
@@ -31,37 +33,41 @@ export default function Login() {
     
     try {
       await login(email, password);
-      toast.success("Login successful", "Welcome back!");
+      toast.success("Login successful", {
+        description: "Welcome back!"
+      });
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("Login failed", error.message || "Failed to login");
+      toast.error("Login failed", {
+        description: error.message || "Failed to login"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-600 to-slate-800">
       <div className="w-full max-w-md px-4">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Hostel Management System</h1>
-          <p className="text-slate-600 mt-2">Login to access your account</p>
+          <h1 className="text-3xl font-bold text-white">Hostel Management System</h1>
+          <p className="text-slate-300 mt-2">Login to access your account</p>
         </div>
         
-        <Card className="border-slate-200 shadow-lg">
-          <CardHeader className="space-y-1 bg-gradient-to-r from-slate-50 to-slate-100 rounded-t-lg border-b border-slate-200">
+        <Card className="border-slate-200 shadow-lg bg-white/10 backdrop-blur-sm">
+          <CardHeader className="space-y-1 bg-gradient-to-r from-slate-700 to-slate-800 rounded-t-lg border-b border-slate-600">
             <div className="flex items-center justify-center mb-2">
-              <div className="bg-blue-600 rounded-full p-3">
+              <div className="bg-slate-500 rounded-full p-3">
                 <LogIn size={24} className="text-white" />
               </div>
             </div>
-            <CardTitle className="text-slate-800 text-xl">Login</CardTitle>
-            <CardDescription className="text-slate-600">Enter your credentials to continue</CardDescription>
+            <CardTitle className="text-white text-xl">Login</CardTitle>
+            <CardDescription className="text-slate-300">Enter your credentials to continue</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-6 bg-white/5 text-white">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <Mail className="h-5 w-5 text-slate-400" />
@@ -72,17 +78,17 @@ export default function Login() {
                     placeholder="you@example.com" 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)} 
-                    className="pl-10 bg-white border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 bg-slate-700/50 border-slate-500 focus:border-blue-400 focus:ring-blue-400 text-white"
                     required 
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-slate-700">Password</Label>
+                  <Label htmlFor="password" className="text-white">Password</Label>
                   <Link 
                     to="#" 
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    className="text-sm text-blue-300 hover:text-blue-100 hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -94,7 +100,7 @@ export default function Login() {
                     placeholder="••••••••" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
-                    className="bg-white border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-slate-700/50 border-slate-500 focus:border-blue-400 focus:ring-blue-400 text-white"
                     required 
                   />
                   <button 
@@ -112,9 +118,9 @@ export default function Login() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-b-lg border-t border-slate-200 pt-4">
+            <CardFooter className="flex flex-col gap-4 bg-gradient-to-r from-slate-700 to-slate-800 rounded-b-lg border-t border-slate-600 pt-4">
               <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white" 
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -129,9 +135,13 @@ export default function Login() {
                   </>
                 )}
               </Button>
-              <p className="text-sm text-slate-600 text-center">
+              <div className="mt-2 flex items-center justify-center gap-1">
+                <p className="text-sm text-slate-300">Demo: </p>
+                <p className="text-sm font-medium text-blue-300">demo@example.com / password123</p>
+              </div>
+              <p className="text-sm text-slate-300 text-center">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:text-blue-800 hover:underline">
+                <Link to="/register" className="text-blue-300 hover:text-blue-100 hover:underline">
                   Sign up
                 </Link>
               </p>

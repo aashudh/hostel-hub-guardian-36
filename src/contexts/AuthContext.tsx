@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseClient } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 
 export type UserRole = 'student' | 'warden' | null;
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Initialize auth state
   useEffect(() => {
     // First set up the auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log("Auth state changed:", event, newSession ? "Session exists" : "No session");
         setSession(newSession);
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    supabaseClient.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Checking for existing session:", currentSession ? "Found" : "None found");
       setSession(currentSession);
       
@@ -73,13 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userId: string) => {
     try {
       // Check if user exists in either students or wardens table
-      const studentRes = await supabase
+      const studentRes = await supabaseClient
         .from('students')
         .select('*')
         .eq('user_id', userId)
         .single();
       
-      const wardenRes = await supabase
+      const wardenRes = await supabaseClient
         .from('wardens')
         .select('*')
         .eq('user_id', userId)
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       console.log("Attempting login for:", email);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       });
@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (userData: any) => {
     try {
       // Register the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabaseClient.auth.signUp({
         email: userData.email,
         password: userData.password,
       });
@@ -175,7 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Create the user profile in the appropriate table
       if (userData.role === 'student') {
-        const { error: studentError } = await supabase.from('students').insert({
+        const { error: studentError } = await supabaseClient.from('students').insert({
           user_id: authData.user.id,
           name: userData.name,
           email: userData.email,
@@ -187,7 +187,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (studentError) throw studentError;
       } else if (userData.role === 'warden') {
-        const { error: wardenError } = await supabase.from('wardens').insert({
+        const { error: wardenError } = await supabaseClient.from('wardens').insert({
           user_id: authData.user.id,
           name: userData.name,
           email: userData.email,
@@ -205,10 +205,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
-      toast.success("Logged out", "You have been logged out");
-    } catch (error: any) {
-      toast.error("Logout failed", error.message || "Logout failed");
+      await supabaseClient.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setIsAuthenticated(false);
+      
+      toast.success("Logged out", {
+        description: "You have been logged out"
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Error", {
+        description: "Failed to log out"
+      });
     }
   };
 
