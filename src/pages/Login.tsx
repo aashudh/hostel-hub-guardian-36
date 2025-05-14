@@ -1,3 +1,4 @@
+
 import { useState, FormEvent } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Login() {
   const { login, isAuthenticated } = useAuth();
@@ -23,9 +24,17 @@ export default function Login() {
     
     try {
       await login(email, password);
-    } catch (error) {
-      // Error is handled within the login function
+      toast({
+        title: "Success",
+        description: "You have successfully logged in",
+      });
+    } catch (error: any) {
       console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

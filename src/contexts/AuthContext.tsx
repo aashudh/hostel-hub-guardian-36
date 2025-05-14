@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 
@@ -40,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        console.log("Auth state changed:", event, newSession ? "Session exists" : "No session");
         setSession(newSession);
         
         if (newSession?.user) {
@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               emergencyContacts: []
             });
           } else {
+            console.log("User found in auth but not in students or wardens tables");
             setUser(null);
           }
         } else {
@@ -101,10 +102,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Checking for existing session:", currentSession ? "Found" : "None found");
       setSession(currentSession);
       
       if (currentSession?.user) {
         // We'll fetch the user data in the auth state change handler
+        console.log("Existing session found for user:", currentSession.user.email);
       }
     });
 
@@ -115,14 +118,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting login for:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Login error:", error.message);
+        throw error;
+      }
+      
+      console.log("Login successful:", data.user?.email);
+      return data;
     } catch (error: any) {
-      toast.error(error.message || "Failed to login");
+      console.error("Login function error:", error.message);
+      toast({
+        title: "Login failed",
+        description: error.message || "Failed to login",
+        variant: "destructive",
+      });
       throw error;
     }
   };
