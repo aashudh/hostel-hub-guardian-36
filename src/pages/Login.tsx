@@ -20,17 +20,22 @@ export default function Login() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please enter your email and password",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await login(email, password);
-      toast({
-        title: "Success",
-        description: "You have successfully logged in",
-      });
     } catch (error: any) {
       console.error("Login error:", error);
-      // Toast is already displayed in the login function
+      // Toast is shown in the login function
     } finally {
       setIsLoading(false);
     }

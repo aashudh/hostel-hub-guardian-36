@@ -34,6 +34,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Initialize auth state
   useEffect(() => {
@@ -44,59 +45,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(newSession);
         
         if (newSession?.user) {
-          // Check if user exists in either students or wardens table
-          const studentRes = await supabase
-            .from('students')
-            .select('*')
-            .eq('user_id', newSession.user.id)
-            .single();
-          
-          const wardenRes = await supabase
-            .from('wardens')
-            .select('*')
-            .eq('user_id', newSession.user.id)
-            .single();
-            
-          if (studentRes.data) {
-            // Convert emergency_contacts to array if it's not already
-            let emergencyContacts: string[] = [];
-            if (studentRes.data.emergency_contacts) {
-              if (Array.isArray(studentRes.data.emergency_contacts)) {
-                // Map each item to string to ensure type compatibility
-                emergencyContacts = studentRes.data.emergency_contacts.map(contact => 
-                  typeof contact === 'string' ? contact : String(contact)
-                );
-              } else if (typeof studentRes.data.emergency_contacts === 'string') {
-                emergencyContacts = [studentRes.data.emergency_contacts];
-              }
-            }
-
-            setUser({
-              id: studentRes.data.id,
-              name: studentRes.data.name,
-              email: studentRes.data.email,
-              role: 'student',
-              roomNumber: studentRes.data.room_number,
-              hostelBlock: studentRes.data.hostel_block,
-              phoneNumber: studentRes.data.phone,
-              emergencyContacts
-            });
-          } else if (wardenRes.data) {
-            setUser({
-              id: wardenRes.data.id,
-              name: wardenRes.data.name,
-              email: wardenRes.data.email,
-              role: 'warden',
-              hostelBlock: wardenRes.data.hostel_block,
-              phoneNumber: wardenRes.data.phone,
-              emergencyContacts: []
-            });
-          } else {
-            console.log("User found in auth but not in students or wardens tables");
-            setUser(null);
-          }
+          // We'll fetch user data in a non-blocking way
+          fetchUserData(newSession.user.id);
         } else {
           setUser(null);
+          setIsInitializing(false);
         }
       }
     );
@@ -107,8 +60,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(currentSession);
       
       if (currentSession?.user) {
-        // We'll fetch the user data in the auth state change handler
-        console.log("Existing session found for user:", currentSession.user.email);
+        fetchUserData(currentSession.user.id);
+      } else {
+        setIsInitializing(false);
       }
     });
 
@@ -116,6 +70,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      // Check if user exists in either students or wardens table
+      const studentRes = await supabase
+        .from('students')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      const wardenRes = await supabase
+        .from('wardens')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+        
+      if (studentRes.data) {
+        // Convert emergency_contacts to array if it's not already
+        let emergencyContacts: string[] = [];
+        if (studentRes.data.emergency_contacts) {
+          if (Array.isArray(studentRes.data.emergency_contacts)) {
+            // Map each item to string to ensure type compatibility
+            emergencyContacts = studentRes.data.emergency_contacts.map(contact => 
+              typeof contact === 'string' ? contact : String(contact)
+            );
+          } else if (typeof studentRes.data.emergency_contacts === 'string') {
+            emergencyContacts = [studentRes.data.emergency_contacts];
+          }
+        }
+
+        setUser({
+          id: studentRes.data.id,
+          name: studentRes.data.name,
+          email: studentRes.data.email,
+          role: 'student',
+          roomNumber: studentRes.data.room_number,
+          hostelBlock: studentRes.data.hostel_block,
+          phoneNumber: studentRes.data.phone,
+          emergencyContacts
+        });
+      } else if (wardenRes.data) {
+        setUser({
+          id: wardenRes.data.id,
+          name: wardenRes.data.name,
+          email: wardenRes.data.email,
+          role: 'warden',
+          hostelBlock: wardenRes.data.hostel_block,
+          phoneNumber: wardenRes.data.phone,
+          emergencyContacts: []
+        });
+      } else {
+        console.log("User found in auth but not in students or wardens tables");
+        setUser(null);
+      }
+      setIsInitializing(false);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setUser(null);
+      setIsInitializing(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -127,6 +142,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error("Login error:", error.message);
+        toast({
+          title: "Login failed",
+          description: error.message || "Failed to login",
+          variant: "destructive",
+        });
         throw error;
       }
       
