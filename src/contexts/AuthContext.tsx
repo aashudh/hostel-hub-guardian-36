@@ -61,7 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             let emergencyContacts: string[] = [];
             if (studentRes.data.emergency_contacts) {
               if (Array.isArray(studentRes.data.emergency_contacts)) {
-                emergencyContacts = studentRes.data.emergency_contacts;
+                // Map each item to string to ensure type compatibility
+                emergencyContacts = studentRes.data.emergency_contacts.map(contact => 
+                  typeof contact === 'string' ? contact : String(contact)
+                );
               } else if (typeof studentRes.data.emergency_contacts === 'string') {
                 emergencyContacts = [studentRes.data.emergency_contacts];
               }
