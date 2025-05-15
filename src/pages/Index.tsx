@@ -10,11 +10,11 @@ const Index = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      console.log("Not authenticated, redirecting to login");
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
-  // Return the Dashboard component if authenticated
   return isAuthenticated ? <Dashboard /> : null;
 };
 

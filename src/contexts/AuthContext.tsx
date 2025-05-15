@@ -156,6 +156,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       console.log("Attempting login for:", email);
+      
+      // Special case for the demo account
+      if (email === "demo@example.com" && password === "password123") {
+        console.log("Using demo account");
+        
+        // Create a mock session and user for demo
+        const demoUser = {
+          id: "demo-user-id",
+          name: "Demo User",
+          email: "demo@example.com",
+          role: 'student' as UserRole,
+          roomNumber: "101",
+          hostelBlock: "A",
+          phoneNumber: "555-123-4567",
+          emergencyContacts: ["555-765-4321"]
+        };
+        
+        setUser(demoUser);
+        setIsAuthenticated(true);
+        
+        toast.success("Login successful", {
+          description: "Welcome to the demo account!"
+        });
+        
+        return;
+      }
+      
+      // Normal login flow
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -167,10 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log("Login successful:", data.user?.email);
-      
-      // Note: We don't need to manually set the user or session here
-      // The onAuthStateChange listener will handle that
-      // Return void to match the interface
+      // The onAuthStateChange listener will handle the session and user update
     } catch (error: any) {
       console.error("Login function error:", error.message);
       throw error;

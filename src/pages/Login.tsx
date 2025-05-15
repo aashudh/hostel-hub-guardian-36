@@ -46,10 +46,25 @@ export default function Login() {
     }
   };
 
-  const useDemoAccount = () => {
-    // Use this exact demo account
+  const useDemoAccount = async () => {
     setEmail("demo@example.com");
     setPassword("password123");
+    
+    // Auto-submit the form with demo credentials
+    setIsLoading(true);
+    try {
+      await login("demo@example.com", "password123");
+      toast.success("Demo login successful", {
+        description: "Welcome to the demo account!"
+      });
+    } catch (error: any) {
+      console.error("Demo login error:", error);
+      toast.error("Demo login failed", {
+        description: error.message || "Failed to login with demo account."
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -146,6 +161,7 @@ export default function Login() {
                 type="button"
                 onClick={useDemoAccount}
                 className="w-full bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-md flex items-center justify-center"
+                disabled={isLoading}
               >
                 <span>Use Demo Account</span>
               </button>
