@@ -39,7 +39,7 @@ export default function Login() {
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error("Login failed", {
-        description: error.message || "Failed to login"
+        description: error.message || "Failed to login. Please check your credentials."
       });
     } finally {
       setIsLoading(false);
@@ -47,6 +47,7 @@ export default function Login() {
   };
 
   const useDemoAccount = () => {
+    // Use this exact demo account
     setEmail("demo@example.com");
     setPassword("password123");
   };
@@ -125,6 +126,7 @@ export default function Login() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4 bg-gradient-to-r from-slate-700 to-slate-800 rounded-b-lg border-t border-slate-600 pt-4">
               <Button 
+                type="submit"
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white" 
                 disabled={isLoading}
               >

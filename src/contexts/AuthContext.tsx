@@ -50,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           fetchUserData(newSession.user.id);
         } else {
           setUser(null);
+          setIsAuthenticated(false);
           setIsInitializing(false);
         }
       }
@@ -111,6 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           phoneNumber: studentRes.data.phone,
           emergencyContacts
         });
+        setIsAuthenticated(true);
       } else if (wardenRes.data) {
         setUser({
           id: wardenRes.data.id,
@@ -121,14 +123,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           phoneNumber: wardenRes.data.phone,
           emergencyContacts: []
         });
+        setIsAuthenticated(true);
       } else {
         console.log("User found in auth but not in students or wardens tables");
-        setUser(null);
+        // Handle the case where the user exists in auth but not in our tables
+        // For demo purposes, we'll create a temporary user object
+        const authUser = await supabase.auth.getUser();
+        if (authUser.data?.user) {
+          setUser({
+            id: authUser.data.user.id,
+            name: authUser.data.user.email?.split('@')[0] || 'User',
+            email: authUser.data.user.email || '',
+            role: 'student', // Default role
+            roomNumber: 'Unassigned',
+            hostelBlock: 'Unassigned'
+          });
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       }
       setIsInitializing(false);
     } catch (error) {
       console.error("Error fetching user data:", error);
       setUser(null);
+      setIsAuthenticated(false);
       setIsInitializing(false);
     }
   };
@@ -147,6 +167,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log("Login successful:", data.user?.email);
+      
+      // Note: We don't need to manually set the user or session here
+      // The onAuthStateChange listener will handle that
       // Return void to match the interface
     } catch (error: any) {
       console.error("Login function error:", error.message);
@@ -229,7 +252,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       register,
       logout, 
-      isAuthenticated: !!user,
+      isAuthenticated,
       isWarden: user?.role === 'warden',
       isStudent: user?.role === 'student',
       session
