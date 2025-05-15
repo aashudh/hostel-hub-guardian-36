@@ -16,6 +16,7 @@ import Allocations from "./pages/Allocations";
 import Students from "./pages/Students";
 import Approvals from "./pages/Approvals";
 import NotFound from "./pages/NotFound";
+import { Toaster } from "sonner";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
           
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </AuthProvider>
   </QueryClientProvider>
 );

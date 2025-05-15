@@ -1,6 +1,6 @@
 
-import { useState, FormEvent } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { useState, FormEvent, useEffect } from "react";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
-  }
+  // Monitor auth state and redirect when authenticated
+  useEffect(() => {
+    console.log("Login page - Authentication state:", isAuthenticated);
+    if (isAuthenticated) {
+      console.log("User is authenticated, redirecting to dashboard");
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,10 +38,13 @@ export default function Login() {
     setIsLoading(true);
     
     try {
+      console.log("Submitting login form");
       await login(email, password);
       toast.success("Login successful", {
         description: "Welcome back!"
       });
+      
+      // Don't need to manually redirect here as the useEffect will handle it
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error("Login failed", {
@@ -50,13 +59,15 @@ export default function Login() {
     setEmail("demo@example.com");
     setPassword("password123");
     
-    // Auto-submit the form with demo credentials
+    // Auto-submit with demo credentials
     setIsLoading(true);
     try {
+      console.log("Using demo account");
       await login("demo@example.com", "password123");
       toast.success("Demo login successful", {
         description: "Welcome to the demo account!"
       });
+      // The useEffect hook will handle the redirect
     } catch (error: any) {
       console.error("Demo login error:", error);
       toast.error("Demo login failed", {

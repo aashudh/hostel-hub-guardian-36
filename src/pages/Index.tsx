@@ -9,9 +9,12 @@ const Index = () => {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    console.log("Index page - Authentication state:", isAuthenticated);
     if (!isAuthenticated) {
       console.log("Not authenticated, redirecting to login");
       navigate("/login");
+    } else {
+      console.log("User is authenticated, showing dashboard");
     }
   }, [isAuthenticated, navigate]);
 

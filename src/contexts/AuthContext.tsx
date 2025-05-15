@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -175,6 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(demoUser);
         setIsAuthenticated(true);
+        console.log("Demo login completed, isAuthenticated set to:", true);
         
         toast.success("Login successful", {
           description: "Welcome to the demo account!"
@@ -190,11 +190,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        console.error("Login error:", error.message);
+        console.error("Login error:", error);
         throw error;
       }
       
       console.log("Login successful:", data.user?.email);
+      setIsAuthenticated(true); // Explicitly set authenticated status
+      console.log("Authentication state after login:", true);
       // The onAuthStateChange listener will handle the session and user update
     } catch (error: any) {
       console.error("Login function error:", error.message);
@@ -270,6 +272,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     }
   };
+
+  console.log("Current auth state:", { isAuthenticated, user: user?.email, role: user?.role });
 
   return (
     <AuthContext.Provider value={{ 
