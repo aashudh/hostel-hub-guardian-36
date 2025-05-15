@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Initialize auth state
   useEffect(() => {
     // First set up the auth state listener
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log("Auth state changed:", event, newSession ? "Session exists" : "No session");
         setSession(newSession);
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // Then check for existing session
-    supabaseClient.auth.getSession().then(({ data: { session: currentSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Checking for existing session:", currentSession ? "Found" : "None found");
       setSession(currentSession);
       
@@ -75,13 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userId: string) => {
     try {
       // Check if user exists in either students or wardens table
-      const studentRes = await supabaseClient
+      const studentRes = await supabase
         .from('students')
         .select('*')
         .eq('user_id', userId)
         .single();
       
-      const wardenRes = await supabaseClient
+      const wardenRes = await supabase
         .from('wardens')
         .select('*')
         .eq('user_id', userId)
@@ -157,7 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (userData: any) => {
     try {
       // Register the user in Supabase Auth
-      const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
       });
@@ -177,7 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Create the user profile in the appropriate table
       if (userData.role === 'student') {
-        const { error: studentError } = await supabaseClient.from('students').insert({
+        const { error: studentError } = await supabase.from('students').insert({
           user_id: authData.user.id,
           name: userData.name,
           email: userData.email,
@@ -189,7 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (studentError) throw studentError;
       } else if (userData.role === 'warden') {
-        const { error: wardenError } = await supabaseClient.from('wardens').insert({
+        const { error: wardenError } = await supabase.from('wardens').insert({
           user_id: authData.user.id,
           name: userData.name,
           email: userData.email,

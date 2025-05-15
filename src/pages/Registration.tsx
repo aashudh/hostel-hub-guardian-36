@@ -1,3 +1,4 @@
+
 import { useState, FormEvent } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, UserPlus } from "lucide-react";
-import { supabaseClient } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Registration() {
   const { isAuthenticated } = useAuth();
@@ -43,7 +44,7 @@ export default function Registration() {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabaseClient.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
