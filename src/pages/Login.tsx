@@ -46,6 +46,11 @@ export default function Login() {
     }
   };
 
+  const useDemoAccount = () => {
+    setEmail("demo@example.com");
+    setPassword("password123");
+  };
+
   return (
     <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-600 to-slate-800">
       <div className="w-full max-w-md px-4">
@@ -135,6 +140,13 @@ export default function Login() {
                   </>
                 )}
               </Button>
+              <button 
+                type="button"
+                onClick={useDemoAccount}
+                className="w-full bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-md flex items-center justify-center"
+              >
+                <span>Use Demo Account</span>
+              </button>
               <div className="mt-2 flex items-center justify-center gap-1">
                 <p className="text-sm text-slate-300">Demo: </p>
                 <p className="text-sm font-medium text-blue-300">demo@example.com / password123</p>

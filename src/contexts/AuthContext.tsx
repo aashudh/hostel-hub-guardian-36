@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "sonner";
-import { supabaseClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 
 export type UserRole = 'student' | 'warden' | null;
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
   // Initialize auth state
@@ -134,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       console.log("Attempting login for:", email);
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -205,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await supabaseClient.auth.signOut();
+      await supabase.auth.signOut();
       setUser(null);
       setSession(null);
       setIsAuthenticated(false);
